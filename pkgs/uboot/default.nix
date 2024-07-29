@@ -2,17 +2,17 @@
   pkgs,
   buildUBoot,
 }:
-buildUBoot rec {
-  version = "2021.07-sunxi";
-  modDirVersion = "2021.07-sunxi";
+buildUBoot {
+  version = "2024.01";
+  modDirVersion = "2024.01";
   src = fetchGit {
     url = "https://github.com/orangepi-xunlong/u-boot-orangepi.git";
-    ref = "v2021.07-sunxi";
-    rev = "6fe17fac388aad17490cf386578b7532975e567f";
+    ref = "v2024.01";
+    rev = "a4d4b0e24e185e84dd02f06f53999a8effde86db";
   };
 
   BL31 = "${pkgs.armTrustedFirmwareAllwinnerH616}/bl31.bin";
-  defconfig = "orangepi_zero3_defconfig";
+  defconfig = "orangepi_zero2w_defconfig";
   filesToInstall = ["u-boot-sunxi-with-spl.bin"];
   extraMeta.platforms = ["aarch64-linux"];
 }
