@@ -20,6 +20,7 @@
         # "${inputs.nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
         "${inputs.nixpkgs}/nixos/modules/installer/sd-card/sd-image.nix"
         "${inputs.nixpkgs}/nixos/modules/profiles/base.nix"
+        "${inputs.nixpkgs}/nixos/modules/profiles/minimal.nix"
       ];
 
       nixpkgs.hostPlatform = "aarch64-linux";
@@ -44,15 +45,29 @@
 
       # your shiny custom kernel.
       # boot.kernelPackages = pkgs.linuxPackagesFor opiPkgs.linuxOrangePiZero3; # however you get the package here is up to you - overlay or directly from the flake.
+      boot.kernelPackages = pkgs.linuxPackages_6_9;
 
       # opi needs the uboot image written to a specific part of the firmware.
       # sdImage.postBuildCommands = ''dd if=${pkgs.ubootOrangePiZero3}/u-boot-sunxi-with-spl.bin of=$img bs=8 seek=1024 conv=notrunc'';
 
       sdImage = {
+        firmwarePartitionOffset = 1;
         firmwareSize = 200;
         firmwarePartitionName = "BOOT";
-        postBuildCommands = ''
-          dd if=${opiPkgs.ubootOrangePiZero3}/u-boot-sunxi-with-spl.bin of=$img bs=8 seek=1024 conv=notrunc
+        postBuildCommands = let
+          bootloaderFilename = "u-boot-sunxi-with-spl.bin";
+          bootloaderPackage =
+            pkgs.buildUBoot
+            {
+              defconfig = "orangepi_zero2w_defconfig";
+              extraMeta.platforms = ["aarch64-linux"];
+              BL31 = "${pkgs.armTrustedFirmwareAllwinnerH616}/bl31.bin";
+              SCP = "/dev/null";
+              filesToInstall = [bootloaderFilename];
+            };
+        in ''
+          echo "Flashing u-boot: ${bootloaderPackage}/${bootloaderFilename}"
+          dd if=${bootloaderPackage}/${bootloaderFilename} of=$img bs=1024 seek=8 conv=notrunc,fsync status=progress
         '';
         populateFirmwareCommands = ''
           ${config.boot.loader.generic-extlinux-compatible.populateCmd} -c ${config.system.build.toplevel} -d ./firmware
