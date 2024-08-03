@@ -67,12 +67,15 @@
             };
         in ''
           echo "Flashing u-boot: ${bootloaderPackage}/${bootloaderFilename}"
-          dd if=${bootloaderPackage}/${bootloaderFilename} of=$img bs=1024 seek=8 conv=notrunc,fsync status=progress
+          dd if=${bootloaderPackage}/${bootloaderFilename} of=$img bs=1k seek=8 conv=notrunc,fsync status=progress
+          fdisk -l $img
         '';
         populateFirmwareCommands = ''
           ${config.boot.loader.generic-extlinux-compatible.populateCmd} -c ${config.system.build.toplevel} -d ./firmware
         '';
         populateRootCommands = ''
+          mkdir -p ./files/boot
+          ${config.boot.loader.generic-extlinux-compatible.populateCmd} -c ${config.system.build.toplevel} -d ./files/boot
         '';
       };
 
