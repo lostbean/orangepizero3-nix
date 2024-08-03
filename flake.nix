@@ -17,8 +17,7 @@
       opiPkgs = import ./pkgs {inherit pkgs;};
     in {
       imports = [
-        # "${inputs.nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
-        ./pkgs/installer/sd-card/sd-image.nix
+        "${inputs.nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
         "${inputs.nixpkgs}/nixos/modules/profiles/base.nix"
         "${inputs.nixpkgs}/nixos/modules/profiles/minimal.nix"
       ];
@@ -56,8 +55,10 @@
         firmwarePartitionName = "BOOT";
         postBuildCommands = let
           bootloaderFilename = "u-boot-sunxi-with-spl.bin";
-          bootloaderPackage =
-            pkgs.buildUBoot
+          bootloaderPackage = pkgs.callPackage ./pkgs/uboot {};
+          # mainline u-boot still doesn't support the zero 2w
+          bootloaderPackageMainline =
+            pkgs.pkgsCross.aarch64-multiplatform.buildUBoot
             {
               defconfig = "orangepi_zero2w_defconfig";
               extraMeta.platforms = ["aarch64-linux"];
@@ -68,11 +69,8 @@
         in ''
           echo "Flashing u-boot: ${bootloaderPackage}/${bootloaderFilename}"
           dd if=${bootloaderPackage}/${bootloaderFilename} of=$img bs=1k seek=8 conv=notrunc,fsync status=progress
-          fdisk -l $img
         '';
-        populateFirmwareCommands = ''
-          ${config.boot.loader.generic-extlinux-compatible.populateCmd} -c ${config.system.build.toplevel} -d ./firmware
-        '';
+        populateFirmwareCommands = "";
         populateRootCommands = ''
           mkdir -p ./files/boot
           ${config.boot.loader.generic-extlinux-compatible.populateCmd} -c ${config.system.build.toplevel} -d ./files/boot
@@ -81,6 +79,26 @@
 
       # this gets burned straight onto an sd. no point in zstd.
       sdImage.compressImage = false;
+
+      users = {
+        mutableUsers = false;
+        users.admin = {
+          isNormalUser = true;
+          password = "admin";
+          extraGroups = ["wheel"];
+        };
+      };
+
+      networking = {
+        hostName = "zero2w";
+        wireless = {
+          enable = true;
+          networks."Rimac Nevera".psk = "array9leap2recall";
+          interfaces = ["wan0" "wlan0"];
+        };
+      };
+
+      environment.systemPackages = with pkgs; [vim];
     };
   in {
     opi =
