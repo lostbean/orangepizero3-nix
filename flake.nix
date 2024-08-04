@@ -43,11 +43,11 @@
       boot.initrd.supportedFilesystems = pkgs.lib.mkForce ["vfat" "ext4"];
 
       # your shiny custom kernel.
-      # boot.kernelPackages = pkgs.linuxPackagesFor opiPkgs.linuxOrangePiZero3; # however you get the package here is up to you - overlay or directly from the flake.
-      boot.kernelPackages = pkgs.linuxPackages_6_9;
-
-      # opi needs the uboot image written to a specific part of the firmware.
-      # sdImage.postBuildCommands = ''dd if=${pkgs.ubootOrangePiZero3}/u-boot-sunxi-with-spl.bin of=$img bs=8 seek=1024 conv=notrunc'';
+      boot.kernelPackages = let
+        kernel = pkgs.callPackage ./pkgs/linux {};
+      in
+        # pkgs.linuxPackages_6_9;
+        pkgs.linuxPackagesFor kernel;
 
       sdImage = {
         firmwarePartitionOffset = 1;
@@ -97,6 +97,15 @@
           interfaces = ["wan0" "wlan0"];
         };
       };
+
+      hardware.firmware = let
+        wifi =
+          pkgs.callPackage
+          ./pkgs/firmware
+          {};
+      in [
+        wifi
+      ];
 
       environment.systemPackages = with pkgs; [vim];
     };
