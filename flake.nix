@@ -15,6 +15,7 @@
       ...
     }: let
       opiPkgs = import ./pkgs {inherit pkgs;};
+      linux-overlay = import ./pkgs/linux-patched;
     in {
       imports = [
         "${inputs.nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
@@ -31,6 +32,7 @@
           makeModulesClosure = x:
             super.makeModulesClosure (x // {allowMissing = true;});
         })
+        linux-overlay
       ];
 
       # u-boot, no grub, no efi.
@@ -46,8 +48,9 @@
       boot.kernelPackages = let
         kernel = pkgs.callPackage ./pkgs/linux {};
       in
-        # pkgs.linuxPackages_6_9;
-        pkgs.linuxPackagesFor kernel;
+        pkgs.linuxPackages_sun50i;
+      # pkgs.linuxPackages_6_9;
+      # pkgs.linuxPackagesFor kernel;
 
       sdImage = {
         firmwarePartitionOffset = 1;
