@@ -48,9 +48,9 @@
       boot.kernelPackages = let
         kernel = pkgs.callPackage ./pkgs/linux {};
       in
-        pkgs.linuxPackages_sun50i;
-      # pkgs.linuxPackages_6_9;
-      # pkgs.linuxPackagesFor kernel;
+        # pkgs.linuxPackages_sun50i;
+        # pkgs.linuxPackages_6_9;
+        pkgs.linuxPackagesFor kernel;
 
       sdImage = {
         firmwarePartitionOffset = 1;

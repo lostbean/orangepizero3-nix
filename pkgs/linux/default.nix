@@ -2,8 +2,10 @@
   linuxManualConfig,
   lib,
   stdenv,
+  ubootTools,
   ...
-}: (linuxManualConfig {
+}:
+(linuxManualConfig {
   inherit lib stdenv;
   version = "6.1.31-sun50iw9";
   modDirVersion = "6.1.31";
@@ -33,4 +35,8 @@
   # enables several nixos-specific kernel features and properly enables wifi driver modules.
   configfile = ./sun50iw9_defconfig;
   allowImportFromDerivation = true;
+})
+.overrideAttrs (old: {
+  name = "k"; # dodge uboot length limits
+  nativeBuildInputs = old.nativeBuildInputs ++ [ubootTools];
 })
