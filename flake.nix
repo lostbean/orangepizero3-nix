@@ -46,7 +46,7 @@
 
       # your shiny custom kernel.
       boot.kernelPackages = let
-        kernel = pkgs.callPackage ./pkgs/linux {};
+        kernel = pkgs.callPackage ./pkgs/linux-opi {};
       in
         # pkgs.linuxPackages_sun50i;
         # pkgs.linuxPackages_6_9;
