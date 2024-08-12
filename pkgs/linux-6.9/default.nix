@@ -1,6 +1,17 @@
 {pkgs, ...}:
-pkgs.linux_6_9.override {
-  argsOverride = {
+with pkgs;
+with lib;
+  buildLinux rec {
+    src = fetchGit {
+      url = "git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git";
+      rev = "d376cac46d30f3913ed0166151263b7d0ad7eed9";
+    };
+    version = "6.9.0";
+    modDirVersion = version;
+    extraMeta.branch = versions.majorMinor version;
+
+    configfile = ./config;
+
     kernelPatches = [
       pkgs.linuxKernel.kernelPatches.bridge_stp_helper
       pkgs.linuxKernel.kernelPatches.request_key_helper
@@ -62,5 +73,4 @@ pkgs.linux_6_9.override {
       #   patch = ./wireless-uwe5622/uwe5622-v6.9.patch;
       # }
     ];
-  };
-}
+  }
