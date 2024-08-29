@@ -1,0 +1,4 @@
+--- a/drivers/net/wireless/Makefile
++++ b/drivers/net/wireless/Makefile
+@@ -1 +1,2 @@
++obj-$(CONFIG_SPARD_WLAN_SUPPORT) += uwe5622/
